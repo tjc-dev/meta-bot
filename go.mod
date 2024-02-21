@@ -5,6 +5,7 @@ go 1.21
 require (
 	github.com/bwmarrin/discordgo v0.27.1
 	github.com/davecgh/go-spew v1.1.1
+	github.com/dustin/go-humanize v1.0.1
 	github.com/gagliardetto/binary v0.7.9
 	github.com/gagliardetto/gofuzz v1.2.2
 	github.com/gagliardetto/solana-go v1.8.4
