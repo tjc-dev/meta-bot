@@ -29,6 +29,7 @@ func UpdateChannelNames(s *discordgo.Session) {
 
 // updateAllGuilds encapsulates the logic to update all guilds, making it reusable
 func updateAllGuilds(s *discordgo.Session) {
+	start := time.Now()
 	guilds, err := s.UserGuilds(0, "", "")
 	if err != nil {
 		fmt.Println("Error fetching guilds:", err)
@@ -38,6 +39,7 @@ func updateAllGuilds(s *discordgo.Session) {
 	for _, guild := range guilds {
 		updateChannelsInGuild(s, guild.ID)
 	}
+	fmt.Printf("Took %s to update \n", time.Since(start))
 }
 
 func updateChannelsInGuild(s *discordgo.Session, guildID string) {

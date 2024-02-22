@@ -3,13 +3,14 @@ package metadao
 import (
 	"context"
 	"fmt"
-	bin "github.com/gagliardetto/binary"
-	"github.com/gagliardetto/solana-go"
-	"github.com/gagliardetto/solana-go/rpc"
 	"math/big"
 	"metabot/internal/autocrat_v0"
 	"metabot/internal/openbook_twap"
 	"os"
+
+	bin "github.com/gagliardetto/binary"
+	"github.com/gagliardetto/solana-go"
+	"github.com/gagliardetto/solana-go/rpc"
 )
 
 var (
@@ -56,8 +57,13 @@ func GetProposals() (proposals map[int]string) {
 		}
 
 		details := GetTWAP(prop)
+
 		if details.Pass > details.Fail {
-			proposals[int(prop.Number)] = fmt.Sprintf("P%d: $%.2fp > $%.2ff", prop.Number, details.Pass, details.Fail)
+			if details.Pass >= details.Fail*1.05 {
+				proposals[int(prop.Number)] = fmt.Sprintf("P%d: $%.2fp > $%.2ff", prop.Number, details.Pass, details.Fail)
+			} else {
+				proposals[int(prop.Number)] = fmt.Sprintf("P%d: $%.2fp = $%.2ff", prop.Number, details.Pass, details.Fail)
+			}
 		} else {
 			proposals[int(prop.Number)] = fmt.Sprintf("P%d: $%.2fp < $%.2ff", prop.Number, details.Pass, details.Fail)
 		}
