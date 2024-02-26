@@ -106,6 +106,9 @@ func GetTWAPMarket(market solana.PublicKey) openbook_twap.TWAPMarket {
 func GetDollarValue(oracle openbook_twap.TWAPOracle) float64 {
 
 	slotsPassed := oracle.LastUpdatedSlot - oracle.InitialSlot
+	if slotsPassed == 0 {
+		return 1
+	}
 	slotsPassedBig := new(big.Int).SetUint64(slotsPassed)
 	twapValue := new(big.Int).Div(oracle.ObservationAggregator.BigInt(), slotsPassedBig)
 
