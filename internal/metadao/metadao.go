@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 	"math/big"
-	"metabot/internal/autocrat_v0"
-	"metabot/internal/openbook_twap"
+	"metabot/internal/idl/autocrat_v0"
+	"metabot/internal/idl/openbook_twap"
 	"os"
 
 	bin "github.com/gagliardetto/binary"

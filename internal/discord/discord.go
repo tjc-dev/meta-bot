@@ -2,8 +2,12 @@ package discord
 
 import (
 	"fmt"
+	"github.com/gagliardetto/solana-go"
+	"github.com/gagliardetto/solana-go/rpc"
+	"math/big"
 	"metabot/internal/jup"
 	"metabot/internal/metadao"
+	openbook2 "metabot/internal/openbook"
 	"os"
 	"sort"
 	"strconv"
@@ -103,6 +107,13 @@ func updateChannelsInGuild(s *discordgo.Session, guildID string) {
 	reorderChannels(s, guildID, metabotCategoryID, proposals)
 
 	updateSpotPrice(s, guildID, metabotCategoryID)
+
+	asksEnabled := os.Getenv("ENABLE_ASKS")
+
+	if asksEnabled == "TRUE" {
+		updateAsk(s, guildID, metabotCategoryID)
+	}
+
 }
 
 func updateSpotPrice(s *discordgo.Session, guildID string, categoryID string) {
@@ -120,6 +131,52 @@ func updateSpotPrice(s *discordgo.Session, guildID string, categoryID string) {
 			_, err := s.ChannelEdit(channel.ID, &discordgo.ChannelEdit{
 				Name:     prettyPrice,
 				Position: 0,
+			})
+			if err != nil {
+				fmt.Println("Error updating channel name:", err)
+			}
+			break
+		}
+	}
+}
+
+func updateAsk(s *discordgo.Session, guildID string, categoryID string) {
+	endpoint := os.Getenv("RPC_URL")
+	rpcClient := rpc.New(endpoint)
+	openbook := openbook2.NewOpenBook(rpcClient, solana.MustPublicKeyFromBase58("opnb2LAfJYbRMAHHvqjCwQxanZn7ReEHp1k81EohpZb"))
+
+	market, err := openbook.GetMarket(solana.MustPublicKeyFromBase58("44yiceSCYefxLtxEZhgAsA4g9RpW7xViERJqrrTxoC1P"))
+
+	if err != nil {
+		fmt.Println("Error getting market:", err)
+		return
+	}
+
+	asks, _ := openbook.GetSide(market.Asks)
+	clusterTime := big.NewInt(0)
+	lbds := openbook2.NewLocalBookSide(*clusterTime, &market, &asks)
+	text := "Ask: 0 @ $0.00"
+	orders := lbds.FixedItems()
+	if len(orders) > 0 {
+		priceLotsInt, err := strconv.Atoi(orders[0].PriceLots.String()) // Convert string to int
+		if err != nil {
+			fmt.Println("Error converting price to integer:", err)
+			return
+		}
+		text = fmt.Sprintf("Ask: %.2f @ $%.2f\n", float64(orders[0].LeafNode.Quantity)/10000, float64(priceLotsInt)/100)
+	}
+
+	channels, err := s.GuildChannels(guildID)
+	if err != nil {
+		fmt.Println("Error fetching channels for guild:", err)
+		return
+	}
+
+	for _, channel := range channels {
+		if channel.ParentID == categoryID && strings.HasPrefix(channel.Name, "Ask:") {
+			_, err := s.ChannelEdit(channel.ID, &discordgo.ChannelEdit{
+				Name:     text,
+				Position: 1,
 			})
 			if err != nil {
 				fmt.Println("Error updating channel name:", err)
@@ -160,9 +217,9 @@ func reorderChannels(s *discordgo.Session, guildID string, metabotCategoryID str
 			if err != nil {
 				continue
 			}
-			if id == proposalID && channel.Position != index+1 {
+			if id == proposalID && channel.Position != index+2 {
 				_, err := s.ChannelEditComplex(channel.ID, &discordgo.ChannelEdit{
-					Position: index + 1,
+					Position: index + 2,
 				})
 				if err != nil {
 					fmt.Println("Error reordering channel:", err)
