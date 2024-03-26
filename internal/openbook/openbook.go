@@ -50,12 +50,11 @@ func NewOrder(market *openbook_v2.Market, leafNode *openbook_v2.LeafNode, side S
 		IsOraclePegged: isOraclePegged,
 	}
 
-	// U64_MAX_BN represents the maximum value for a 64-bit unsigned integer
 	U64MaxBn := big.NewInt(0).SetUint64(^uint64(0))
 	leafNodeKeyBigInt := big.NewInt(0).SetBytes(leafNode.Key.Bytes())
 
 	// Masking the first 64 bits of the leafNode.Key for SeqNum
-	mask := big.NewInt(1).Lsh(big.NewInt(1), 64).Sub(big.NewInt(1), big.NewInt(1)) // Fixed line
+	mask := big.NewInt(1).Lsh(big.NewInt(1), 64).Sub(big.NewInt(1), big.NewInt(1))
 	if side == Bid {
 		order.SeqNum = big.NewInt(0).Sub(U64MaxBn, big.NewInt(0).And(leafNodeKeyBigInt, mask))
 	} else { // Ask
@@ -86,23 +85,6 @@ func NewLocalBookSide(clusterTime big.Int, market *openbook_v2.Market, bookSide 
 		Market:      market,
 		BookSide:    bookSide,
 	}
-}
-
-type LeafNode struct {
-	// Assuming fields based on the TypeScript code
-	Timestamp   *big.Int
-	TimeInForce *big.Int
-	// Add other necessary fields
-}
-
-type InnerNode struct {
-	Children [2]int // Assuming this holds indices to child nodes
-	// Add other necessary fields
-}
-
-type Node struct {
-	Tag  int
-	Data []byte // This could be different based on your actual implementation
 }
 
 func (ob *OpenBook) GetMarket(address solana.PublicKey) (market openbook_v2.Market, err error) {
