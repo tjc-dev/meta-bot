@@ -130,7 +130,7 @@ func updateSpotPrice(s *discordgo.Session, guildID string, categoryID string) {
 		if channel.ParentID == categoryID && strings.HasPrefix(channel.Name, "Spot:") {
 			_, err := s.ChannelEdit(channel.ID, &discordgo.ChannelEdit{
 				Name:     prettyPrice,
-				Position: 0,
+				Position: 1,
 			})
 			if err != nil {
 				fmt.Println("Error updating channel name:", err)
@@ -176,7 +176,7 @@ func updateAsk(s *discordgo.Session, guildID string, categoryID string) {
 		if channel.ParentID == categoryID && strings.HasPrefix(channel.Name, "Ask:") {
 			_, err := s.ChannelEdit(channel.ID, &discordgo.ChannelEdit{
 				Name:     text,
-				Position: 1,
+				Position: 0,
 			})
 			if err != nil {
 				fmt.Println("Error updating channel name:", err)
