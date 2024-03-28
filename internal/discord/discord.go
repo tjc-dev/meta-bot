@@ -91,15 +91,13 @@ func updateChannelsInGuild(s *discordgo.Session, guildID string) {
 	// Create channels for proposals that do not have an existing channel
 	for proposalID, name := range proposals {
 		if !existingChannels[proposalID] {
-			ch, err := s.GuildChannelCreate(guildID, name, discordgo.ChannelTypeGuildVoice)
-			if err != nil {
-				fmt.Println("Error creating channel:", err)
-			}
-			_, err = s.ChannelEdit(ch.ID, &discordgo.ChannelEdit{
+			_, err := s.GuildChannelCreateComplex(guildID, discordgo.GuildChannelCreateData{
+				Name:     name,
+				Type:     discordgo.ChannelTypeGuildVoice,
 				ParentID: metabotCategoryID,
 			})
 			if err != nil {
-				fmt.Println("Error setting parent channel:", err)
+				fmt.Println("Error creating channel:", err)
 			}
 		}
 	}
